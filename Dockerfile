@@ -42,12 +42,19 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install Nginx for static file serving
+# Install system dependencies including Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     libpq-dev \
+    curl \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Verify Node.js installation
+RUN node --version && npm --version
 
 # Copy Python environment from server-builder
 COPY --from=server-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
@@ -60,6 +67,9 @@ COPY --from=client-builder /app/client/public /app/client/public
 
 # Copy Django application from server-builder
 COPY --from=server-builder /app/server /app/server
+
+# Create staticfiles directory for Django
+RUN mkdir -p /app/server/staticfiles
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/sites-available/default
