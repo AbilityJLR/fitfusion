@@ -1,0 +1,38 @@
+# Common
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+*.md
+!README.md
+
+# Node.js (client)
+client/node_modules
+client/npm-debug.log
+client/.next
+client/out
+client/build
+client/dist
+client/coverage
+client/.env*
+client/!.env.example
+
+# Python (server)
+server/__pycache__
+server/*.py[cod]
+server/*$py.class
+server/*.so
+server/.Python
+server/venv/
+server/env/
+server/ENV/
+server/.env*
+server/!.env.example
+server/*.log
+server/db.sqlite3
+server/db.sqlite3-journal
+server/.coverage
+server/htmlcov/
+server/.pytest_cache/ 
