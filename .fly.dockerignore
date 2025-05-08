@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+.github
+
+# Docker
+docker-compose.yml
+client/Dockerfile
+server/Dockerfile
+
+# Fly.io
+fly.toml
+
+# Client
+client/node_modules
+client/.next
+client/out
+client/dist
+client/.cache
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+
+# Server
+server/__pycache__
+server/*.py[cod]
+server/*$py.class
+server/*.so
+server/.Python
+server/venv/
+server/env/
+server/ENV/
+server/*.log
+server/db.sqlite3
+server/db.sqlite3-journal
+server/.coverage
+server/htmlcov/
+server/.pytest_cache/
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+*~ 
