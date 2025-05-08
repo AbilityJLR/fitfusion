@@ -9,6 +9,7 @@ processes = []
 
 [env]
   PORT = "8080"
+  NODE_OPTIONS = "--max_old_space_size=256"
 
 [http_service]
   internal_port = 8080
@@ -21,4 +22,4 @@ processes = []
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 1024 
+  memory_mb = 1536 

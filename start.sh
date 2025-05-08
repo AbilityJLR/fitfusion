@@ -10,7 +10,8 @@ python manage.py collectstatic --noinput
 
 # Start Next.js server
 cd /app/client
-echo "Starting Next.js server..."
+export PORT=3000
+echo "Starting Next.js server on port $PORT..."
 if [ -f "server.js" ]; then
   node server.js &
 else
@@ -22,6 +23,10 @@ fi
 cd /app/server
 echo "Starting Django server..."
 gunicorn server.wsgi:application --bind 0.0.0.0:8000 --workers 2 &
+
+# Wait for services to be available
+echo "Waiting for services to start..."
+sleep 10
 
 # Keep the container running and echo logs
 echo "All services started. Watching logs..."
