@@ -1,58 +1,46 @@
 #!/bin/bash
 set -e
 
-# Check if fly CLI is installed
-if ! command -v flyctl &> /dev/null
-then
-    echo "Fly CLI is not installed. Please install it first:"
-    echo "https://fly.io/docs/hands-on/install-flyctl/"
-    exit 1
+# Colors for terminal output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}Starting deployment process for FitFusion app${NC}"
+
+# Check for required environment variables
+if [ -z "$DATABASE_URL" ]; then
+  echo -e "${RED}Error: DATABASE_URL environment variable is required${NC}"
+  echo "Please set DATABASE_URL to your PostgreSQL connection string"
+  echo "Example: export DATABASE_URL=postgres://username:password@hostname:port/database"
+  exit 1
 fi
 
-# Login to Fly.io if not already logged in
-flyctl auth whoami &> /dev/null || flyctl auth login
-
-# Ask for app name if not already set in fly.toml
-APP_NAME=$(grep "app =" fly.toml | cut -d'"' -f2 2>/dev/null || echo "")
-if [ -z "$APP_NAME" ]; then
-    read -p "Enter your app name: " APP_NAME
-    sed -i '' "s/app = \"fitfusion\"/app = \"$APP_NAME\"/" fly.toml
+# Check for deployment configuration
+if [ ! -f "Dockerfile.production" ]; then
+  echo -e "${RED}Error: Dockerfile.production not found${NC}"
+  exit 1
 fi
 
-# Check if app already exists or needs to be created
-if ! flyctl apps list | grep -q "$APP_NAME"; then
-    echo "Creating new app: $APP_NAME"
-    flyctl apps create "$APP_NAME" --machines
+if [ ! -f "fly.toml" ]; then
+  echo -e "${YELLOW}Warning: fly.toml not found. Running 'fly launch' to initialize...${NC}"
+  fly launch --dockerfile Dockerfile.production --no-deploy
 fi
 
-# Ask for region if needed
-read -p "Enter your preferred region (default: sin): " REGION
-REGION=${REGION:-sin}
-sed -i '' "s/primary_region = \"sin\"/primary_region = \"$REGION\"/" fly.toml
-
-# Set secrets
-echo "Setting up secrets..."
-flyctl secrets set SECRET_KEY="$(openssl rand -hex 32)" \
-    DEBUG="False" \
-    ALLOWED_HOSTS="$APP_NAME.fly.dev,localhost,127.0.0.1" \
-    CORS_ALLOWED_ORIGINS="https://$APP_NAME.fly.dev,http://localhost:3000"
-
-# Optional: Set up a database
-read -p "Do you want to set up a PostgreSQL database? (y/n): " SETUP_DB
-if [ "$SETUP_DB" = "y" ]; then
-    echo "Creating PostgreSQL database..."
-    flyctl postgres create --name "$APP_NAME-db" --region "$REGION"
-    
-    # Get the DATABASE_URL
-    DB_URL=$(flyctl postgres attach --app "$APP_NAME" "$APP_NAME-db" | grep "DATABASE_URL" | cut -d'=' -f2-)
-    
-    # Set the DATABASE_URL secret
-    flyctl secrets set DATABASE_URL="$DB_URL"
-fi
+# Set production environment variables
+echo -e "${GREEN}Setting environment variables on Fly.io${NC}"
+fly secrets set \
+  ENVIRONMENT=production \
+  DEBUG=False \
+  DATABASE_URL="$DATABASE_URL" \
+  ALLOWED_HOSTS=".fly.dev,localhost,127.0.0.1" \
+  CORS_ALLOWED_ORIGINS="https://$(fly info -j | jq -r '.Hostname'),http://localhost:3000" \
+  SECRET_KEY="$(openssl rand -hex 32)"
 
 # Deploy the app
-echo "Deploying the application..."
-flyctl deploy
+echo -e "${GREEN}Deploying application to Fly.io${NC}"
+fly deploy --dockerfile Dockerfile.production --strategy immediate
 
-echo "Deployment complete!"
-echo "Your app is available at: https://$APP_NAME.fly.dev" 
+echo -e "${GREEN}Deployment complete!${NC}"
+echo -e "Your application should be available at: ${YELLOW}https://$(fly info -j | jq -r '.Hostname')${NC}" 

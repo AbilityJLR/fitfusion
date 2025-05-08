@@ -46,84 +46,69 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## Deployment to Fly.io
+## Environment Setup
 
-### Prerequisites
+FitFusion supports separate development and production environments:
 
-- Install [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/)
-- Sign up for a Fly.io account
+### Development Environment
 
-### GitHub Actions Deployment (Recommended)
+The development environment is optimized for local development with:
+- Hot reloading for both Next.js and Django
+- SQLite or PostgreSQL database options
+- Debug mode enabled
+- Easy setup with Docker Compose
 
-This project is configured to automatically deploy to Fly.io using GitHub Actions whenever you push to the main branch.
-
-To set up GitHub Actions deployment:
-
-1. Fork or push this repository to your GitHub account
-
-2. Create a Fly.io API token:
-   ```bash
-   fly auth token
-   ```
-
-3. Add the token as a GitHub secret:
-   - Go to your GitHub repository
-   - Navigate to Settings > Secrets and variables > Actions
-   - Create a new secret named `FLY_API_TOKEN` with the value from step 2
-
-4. Initial setup (only needed once):
-   ```bash
-   # Create a new app on Fly.io
-   fly apps create your-app-name
-   
-   # Set up required secrets
-   fly secrets set SECRET_KEY="$(openssl rand -hex 32)" \
-     DEBUG="False" \
-     ALLOWED_HOSTS="your-app-name.fly.dev,localhost,127.0.0.1" \
-     CORS_ALLOWED_ORIGINS="https://your-app-name.fly.dev,http://localhost:3000"
-   
-   # Update app name in fly.toml
-   sed -i 's/app = "fitfusion"/app = "your-app-name"/' fly.toml
-   
-   # Commit and push to GitHub
-   git add fly.toml
-   git commit -m "Update app name for deployment"
-   git push
-   ```
-
-5. Optional: Set up a database:
-   ```bash
-   # Create a PostgreSQL database
-   fly postgres create --name your-app-name-db
-   
-   # Attach the database to your app
-   fly postgres attach --app your-app-name your-app-name-db
-   ```
-
-6. Push to the main branch to trigger deployment:
-   ```bash
-   git push origin main
-   ```
-
-7. Monitor the deployment in the Actions tab of your GitHub repository
-
-### Manual Deployment
-
-You can also deploy manually using the provided script:
+To start the development environment:
 
 ```bash
+./dev.sh
+```
+
+This will start all services in development mode. You can access:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000/api/
+- Django Admin: http://localhost:8000/admin/
+
+To view logs while developing:
+
+```bash
+./dev.sh --logs
+```
+
+### Production Environment
+
+The production environment is optimized for deployment with:
+- Built and minified frontend assets
+- Production-ready Django with Gunicorn
+- PostgreSQL database required
+- Enhanced security settings
+- Nginx for serving static files and proxying requests
+
+To test the production environment locally:
+
+```bash
+./prod-local.sh
+```
+
+This will build and start all services in production mode locally. You can access:
+- Application: http://localhost
+- API: http://localhost/api/
+- Admin: http://localhost/admin/
+
+### Deployment to Fly.io
+
+To deploy to Fly.io:
+
+1. Ensure you have the Fly CLI installed and are logged in
+2. Set up your PostgreSQL database on Fly.io or elsewhere
+3. Run the deployment script:
+
+```bash
+export DATABASE_URL=postgres://username:password@hostname:port/database
 ./deploy.sh
 ```
 
-Or manually with Fly CLI:
-
-```bash
-# Login to Fly
-fly auth login
-
-# Deploy
-fly deploy
-```
+The script will set all necessary environment variables and deploy your application.
 
 ## Project Structure
 
