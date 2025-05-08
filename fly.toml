@@ -5,11 +5,12 @@ kill_timeout = 5
 processes = []
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.production"
 
 [env]
   PORT = "8080"
   NODE_OPTIONS = "--max_old_space_size=256"
+  ENVIRONMENT = "production"
 
 [http_service]
   internal_port = 8080

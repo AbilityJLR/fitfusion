@@ -22,6 +22,11 @@ WORKDIR /app/server
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV ENVIRONMENT=production
+# Set temporary build-time environment variables
+ENV SECRET_KEY=temporary_build_key_not_for_production
+ENV ALLOWED_HOSTS=localhost
+ENV DATABASE_URL=sqlite:///dev.db
+ENV CORS_ALLOWED_ORIGINS=http://localhost
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

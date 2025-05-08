@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ENV=development
+
+# Install dependencies only (to cache them)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# No need to copy source code - we'll mount it as a volume
+
+# Expose port
+EXPOSE 8000
+
+# Command will be overridden by docker-compose 

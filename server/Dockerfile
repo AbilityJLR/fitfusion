@@ -1,53 +1,29 @@
-FROM python:3.11-slim AS base
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
     libpq-dev \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ENV=production
+
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ====================== DEVELOPMENT ======================
-FROM base AS development
-
-# Set environment variable for development
-ENV ENVIRONMENT=development
-ENV DEBUG=True
-
-# Development specific dependencies
-RUN pip install --no-cache-dir debugpy
-
-# Copy the Django project for development
+# Copy source code
 COPY . .
 
-# Run the development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Expose port
+EXPOSE 8080
 
-# ====================== PRODUCTION ======================
-FROM base AS production
-
-# Set environment variable for production
-ENV ENVIRONMENT=production
-ENV DEBUG=False
-
-# Install Gunicorn for production
-RUN pip install --no-cache-dir gunicorn
-
-# Copy the Django project for production
-COPY . .
-
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
-# Run Gunicorn with workers in production
-CMD ["gunicorn", "server.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"] 
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"] 

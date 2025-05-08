@@ -11,7 +11,7 @@ export default function DbTest() {
     async function checkDatabaseConnection() {
       try {
         setLoading(true);
-        const response = await fetch('/api/test-db/');
+        const response = await fetch('/api/test-db');
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
