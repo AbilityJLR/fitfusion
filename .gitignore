@@ -7,6 +7,7 @@
 .env.production.local
 .vscode
 .idea
+*/**/.git
 
 # Node.js (client)
 node_modules/
