@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from fitfusion.views import test_db_connection
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/test-db/', test_db_connection, name='test_db_connection'),
 ]
